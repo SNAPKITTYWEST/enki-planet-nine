@@ -1,0 +1,103 @@
+// adapa_lateral_bloodline.qasm3
+// Lateral Adapa bloodline on non-commutative torus T²_θ
+// Weyl-Heisenberg displacement across 8 variant nodes
+// θ_sovereign = 89/2462,  τ = golden ratio (lateral shift amplitude)
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+// ============================================================
+// SOVEREIGN TORUS PARAMETERS
+// θ = 89/2462 governs Berry phase accumulation between nodes
+// τ = golden ratio scales lateral displacement amplitude
+// ============================================================
+const float[64] THETA_SOVEREIGN       = 89.0 / 2462.0;
+const float[64] WEYL_DISPLACEMENT_XI  = 1.61803398875;   // Golden ratio τ
+
+// ============================================================
+// REGISTERS
+// 3 qubits → 8 basis states = 8 lateral variant nodes V₁–V₈
+// ============================================================
+qubit[3] lineage_register;
+bit[3]   lineage_readout;
+
+// ============================================================
+// INITIALIZE ROOT ADAPA NODE
+// |𝒜₀⟩ = H⊗³|000⟩ = (1/√8)∑|k⟩
+// Equal amplitude across all 8 lateral bloodline shards
+// Weight per shard: |⟨k|𝒜₀⟩|² = 1/8 = 0.125
+// Matches: LineageShard.h_normalized = 0.125
+// ============================================================
+def initialize_root_sage(qubit[3] reg) {
+    h reg[0];   // reg[0] ↔ bit 2 (MSB)
+    h reg[1];   // reg[1] ↔ bit 1
+    h reg[2];   // reg[2] ↔ bit 0 (LSB)
+}
+
+// ============================================================
+// WEYL-HEISENBERG LATERAL DISPLACEMENT
+// Implements T̂_{Δx}(ξ) on the 3-qubit lineage register
+//
+// BCH expansion: T̂(ξ_i)T̂(ξ_j) = T̂(ξ_i+ξ_j) · exp(iφ_{ij})
+// where φ_{ij} = (θ/2ℏ) ξ_{i,μ} ξ_{j,ν}
+//
+// Encoding:
+//  rz(+θ·τ) on reg[0]: positive momentum displacement (p̂ direction)
+//  rz(-θ·τ) on reg[1]: negative position displacement (x̂ direction)
+//  Non-commutativity [x̂,p̂]=iθ encoded via opposing signs
+//  cp(θ) gates: Berry phase cross-coupling between adjacent nodes
+// ============================================================
+def apply_lateral_displacement(qubit[3] reg) {
+    // Momentum-axis displacement (ξ · p̂ component)
+    rz( THETA_SOVEREIGN * WEYL_DISPLACEMENT_XI) reg[0];
+
+    // Position-axis displacement (-Δx · x̂ component)
+    rz(-THETA_SOVEREIGN * WEYL_DISPLACEMENT_XI) reg[1];
+
+    // Berry phase entanglement: V₁-V₂ coupling
+    cp(THETA_SOVEREIGN) reg[0], reg[1];
+
+    // Berry phase entanglement: V₂-V₃ coupling
+    cp(THETA_SOVEREIGN) reg[1], reg[2];
+
+    // Extended coupling: V₁-V₃ (doubled phase from BCH second-order term)
+    cp(2.0 * THETA_SOVEREIGN) reg[0], reg[2];
+}
+
+// ============================================================
+// CLASSICAL LIMIT: HYPERBELT COLLAPSE SIMULATION
+// When θ → 0: Berry phases vanish, torus becomes commutative
+// Simulated by zeroing all rz/cp angles → pure H⊗³ state
+// Corresponds to: HyperbeltCollapse.nc_collapse_at_theta_zero
+// ============================================================
+def apply_classical_limit(qubit[3] reg) {
+    // Zero-phase displacement: no Berry coupling
+    rz(0.0) reg[0];
+    rz(0.0) reg[1];
+    rz(0.0) reg[2];
+    // No cp gates → 8 nodes decouple into independent states
+}
+
+// ============================================================
+// EXECUTION PIPELINE
+// ============================================================
+
+// 1. Prepare root Adapa state: uniform over all 8 lateral variants
+initialize_root_sage(lineage_register);
+
+// 2. Apply non-commutative Weyl displacement (active θ ≠ 0)
+apply_lateral_displacement(lineage_register);
+
+// 3. Measure lateral variant (collapse to one bloodline node)
+lineage_readout = measure lineage_register;
+
+// ============================================================
+// MEASUREMENT INTERPRETATION
+// lineage_readout[2:0] (3-bit binary) → V_{k+1} where k = readout value
+// 000 → V₁ (Adapa, Eridu prime)
+// 001 → V₂  ...  110 → V₇  ...  111 → V₈ (Nungalpirigal)
+//
+// Conservation: ∑|ck|² = 1.0  (total lineage trace = 1)
+// Proved: AdapaLateralTrace.total_lineage_trace_conservation
+// ============================================================
