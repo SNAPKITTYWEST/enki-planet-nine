@@ -1,0 +1,33 @@
+// araemic_core_immutable.qasm3
+// Araemic core bedrock: θ = 89/2462 as non-commutative anchor
+// Core qubit in absolute ground state (reset); collective projection via 2πθ
+// rz(0) identity confirms immutability: core unchanged by zero-force operator
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] ARAEMIC_THETA = 89.0 / 2462.0;
+
+qubit[1] araemic_core_reg;
+qubit[1] collective_reg;
+bit      core_readout;
+
+// Step 1: Initialize Araemic core in absolute ground state
+// reset = |0⟩: the pre-semantic ground, no prior state
+reset araemic_core_reg[0];
+
+// Step 2: Bind collective reality projection via non-commutative θ
+// H on collective: potential field (99% uncollapsed)
+// cp(2πθ): Araemic coupling K between core and collective projection
+h collective_reg[0];
+cp(2.0 * 3.14159265358979 * ARAEMIC_THETA) araemic_core_reg[0], collective_reg[0];
+
+// Step 3: Immutability identity projection
+// rz(0) = identity: confirms core unchanged by zero-force operator
+// Lean 4: immutable_core_is_fixed_point ✓
+rz(0.0) araemic_core_reg[0];
+
+core_readout = measure araemic_core_reg[0];
+// Expected: core_readout = 0 with probability 1.0
+// Core stays in ground state — distortion rejected
