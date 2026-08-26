@@ -3,6 +3,7 @@
 [![License: BSL-1.1](https://img.shields.io/badge/license-BSL--1.1-orange?style=flat-square)](LICENSE)
 [![Patent Pending](https://img.shields.io/badge/patent-pending-red?style=flat-square)]()
 [![Lean 4](https://img.shields.io/badge/verified-Lean_4-blue?style=flat-square)](lean/)
+[![Agda](https://img.shields.io/badge/verified-Agda-blue?style=flat-square)](agda/)
 [![OpenQASM 3.0](https://img.shields.io/badge/circuit-OpenQASM_3.0-purple?style=flat-square)](qasm/)
 [![Zero Sorry](https://img.shields.io/badge/proofs-zero--sorry-brightgreen?style=flat-square)]()
 
@@ -106,15 +107,73 @@ Proof: Enlil ∩ Enki domain = ∅
 
 ---
 
+## Adapa — The 8 Variant Projections
+
+Adapa (𒀭𒀝𒉺) is the prime sage of Eridu, Enki's biological/informational projection. The 8 apkallu archetypes are formalized as eigenvalue projections across wisdom (𝒲) and sovereignty (𝒮) axes:
+
+| Variant | Sage | Axis | Amplification |
+|---------|------|------|---------------|
+| V1 | Adapa (Eridu primary) | Sovereignty | ×1.10 |
+| V2 | Uanduga | Wisdom | ×1.05 |
+| V3 | Enmeduga | Sovereignty | ×1.15 |
+| V4 | Enmegalama | Wisdom | ×1.10 |
+| V5 | Enmebuluga | Sovereignty | ×1.20 |
+| V6 | An-Enlilda | Wisdom | ×1.15 |
+| V7 | Utuabzu | Sovereignty | ×1.25 |
+| V8 | Nungalpirigal | Wisdom | ×1.20 |
+
+**Mortality bifurcation**: `mortality_factor = 1.0` FIXED across all variants — the Anu-Enki protocol divergence. Adapa was offered the bread/water of life at Anu's gates but refused (warned by Enki). Result: maximal intelligence, bounded mortality.
+
+**Qubit encoding**: 2³ = 8 variants → 3-qubit register. θ_sovereign = 89/2462 entangles adjacent variant channels.
+
+| Theorem | Statement | Status |
+|---------|-----------|--------|
+| `variant_mortality_preserved` | M=1.0 preserved by all 8 variants | ✅ |
+| `wisdom_variants_monotone` | V2,V4,V6,V8 never decrease wisdom | ✅ |
+| `sovereignty_variants_monotone` | V1,V3,V5,V7 never decrease sovereignty | ✅ |
+| `wisdom_variant_preserves_sovereignty` | Axes are orthogonal | ✅ |
+| `sovereignty_variant_preserves_wisdom` | Axes are orthogonal | ✅ |
+| `three_qubits_encode_eight` | 2³ = 8 | ✅ |
+
+---
+
+## Agda Invariants (Planetary Gold + Genomics)
+
+### GoldPlanetInvariants.agda
+- `gold-partition`: totalGold = accessible + core
+- `gold-bounded`: totalGold ≤ totalMass
+- `suspension-bound`: suspended gold ≤ accessible gold (defeats atmospheric shield premise)
+- `energy-bound`: usable yield ≤ accessible gold (defeats interstellar transport economics)
+
+### PlanetGoldInvariants.agda
+- `accessibleGold`: Terrestrial=surface only, StrippedCore=total, GasGiant=0
+- `CrossComparison`: `psycheAccessMax` proves 16 Psyche > Earth accessibility
+- `SiderophileSequestration`: core dominates in differentiated bodies
+
+### EnkiApeInvariants.agda
+- `FusionInvariant`: human chrPairs = ape chrPairs ∸ 1 (24→23)
+- `HomologyInvariant`: ≥98% sequence similarity preserved
+- `FertilityInvariant`: Gen-1 sterile × Gen-2 fertile (reproductive transition)
+- `LongevityCapInvariant`: maxLifespan ≤ 120 (telomeric/metabolic bound)
+
+---
+
 ## Repository Structure
 
 ```
 lean/
-  PlanetNineGoldVacuum.lean   — 8 theorems: radius, vacuum, stability, anyons, qubits
-  AnunnakiFormalization.lean  — 5 theorems: ENKI monotonic, orthogonality, commutator
+  PlanetNineGoldVacuum.lean   — 8 theorems: radius, vacuum, NAT stability, anyons, qubits
+  AnunnakiFormalization.lean  — 5 theorems: ENKI monotonic, commutator orthogonality
+  AdapaFormalization.lean     — 6 theorems: mortality invariant, wisdom/sovereignty axes
+
+agda/
+  GoldPlanetInvariants.agda   — Planetary gold partition, shield, extraction physics
+  PlanetGoldInvariants.agda   — BodyType, accessibility, cross-comparison (Earth/Psyche/Jupiter)
+  EnkiApeInvariants.agda      — Taxon lineage, chromosome fusion, fertility, longevity cap
 
 qasm/
   fibonacci_topological_braiding.qasm3  — Corrected F-move + R-matrix circuit
+  adapas_8_variants.qasm3               — 3-qubit Adapa variant register
 
 python/
   anunnaki_ast.py   — Cuneiform AST compiler + runtime commutator verification

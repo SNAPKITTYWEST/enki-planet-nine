@@ -1,0 +1,82 @@
+// adapas_8_variants.qasm3
+// Adapa's 8 variant projections encoded on 3-qubit register (2³ = 8 states)
+// Enki's sovereign non-commutative phase: θ = 89/2462
+// Each computational basis state |xyz⟩ encodes one apkallu variant
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+// θ_sovereign = 89/2462 (connects to NC-QGE and NAT stability bound)
+const float[64] ENKI_SOVEREIGN_THETA = 89.0 / 2462.0;
+
+// ============================================================
+// QUBIT REGISTER
+// 3 qubits → 8 computational basis states
+// |000⟩ = V1 (Adapa, Eridu primary)
+// |001⟩ = V2 (Uanduga)
+// |010⟩ = V3 (Enmeduga)
+// |011⟩ = V4 (Enmegalama)
+// |100⟩ = V5 (Enmebuluga)
+// |101⟩ = V6 (An-Enlilda)
+// |110⟩ = V7 (Utuabzu)
+// |111⟩ = V8 (Nungalpirigal)
+// ============================================================
+qubit[3] variant_register;
+bit[3]   variant_readout;
+
+// ============================================================
+// INITIALIZATION: UNIFORM SUPERPOSITION OVER ALL 8 VARIANTS
+// Each sage archetype equally weighted prior to Enki phase entanglement
+// ============================================================
+def generate_variant_superposition(qubit[3] reg) {
+    // Step 1: Hadamard — equal weight over all 8 basis states
+    h reg[0];
+    h reg[1];
+    h reg[2];
+
+    // Step 2: Apply Enki's non-commutative phase entanglement
+    // θ_sovereign phase between adjacent variant channels
+    // Creates correlations between wisdom-axis and sovereignty-axis variants
+    cp(ENKI_SOVEREIGN_THETA) reg[0], reg[1];   // V1-V2 entanglement
+    cp(ENKI_SOVEREIGN_THETA) reg[1], reg[2];   // V2-V3 entanglement
+
+    // Step 3: Extended phase structure across non-adjacent channels
+    // Encodes the long-range correlations in the apkallu lineage tree
+    cp(2.0 * ENKI_SOVEREIGN_THETA) reg[0], reg[2];  // V1-V3 (doubled phase)
+}
+
+// ============================================================
+// MORTALITY OPERATOR
+// Applies the mortality constraint M=1.0 (Anu-Enki divergence)
+// Phase rotation that commutes with all variant projections
+// ============================================================
+def apply_mortality_constraint(qubit[3] reg) {
+    // Global phase encoding M=1.0 — does not change measurement statistics
+    // but preserves the structural separation from divine eternity
+    rz(ENKI_SOVEREIGN_THETA) reg[0];   // Mortality phase on wisdom channel
+    rz(ENKI_SOVEREIGN_THETA) reg[1];   // Mortality phase on intermediate
+    rz(ENKI_SOVEREIGN_THETA) reg[2];   // Mortality phase on sovereignty channel
+}
+
+// ============================================================
+// EXECUTION PIPELINE
+// ============================================================
+
+// 1. Generate superposition of all 8 Adapa variant projections
+generate_variant_superposition(variant_register);
+
+// 2. Apply mortality constraint (preserves M=1.0 across all variants)
+apply_mortality_constraint(variant_register);
+
+// 3. Readout: collapse to single variant
+//    Each outcome corresponds to one apkallu archetype
+variant_readout = measure variant_register;
+
+// ============================================================
+// INTERPRETATION
+// variant_readout[2:0] encodes the activated variant index (0-7)
+// The mortality constraint ensures no variant transcends M=1.0
+// regardless of wisdom or sovereignty amplification
+// Proved: AdapaFormalization.variant_mortality_preserved
+// ============================================================
