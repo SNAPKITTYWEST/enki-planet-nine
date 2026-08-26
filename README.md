@@ -14,6 +14,22 @@
 
 ---
 
+## Visual Reference
+
+<p align="center">
+  <img src="assets/planet_nine_orbit.mp4" alt="Planet Nine Orbital Simulation" width="600"/>
+</p>
+
+<p align="center"><em>Planet Nine orbital trajectory — NAT stability bound verified: θ × (M₉/M☉) < 1</em></p>
+
+<p align="center">
+  <img src="assets/royal_bull_lyre_ur.png" alt="Bull's Head Lyre from the Royal Tombs of Ur" width="320"/>
+</p>
+
+<p align="center"><em>Bull's Head Lyre — Royal Tombs of Ur (PG 800, c. 2600 BCE). Gold leaf face, lapis lazuli beard.<br/>The physical artifact behind <code>queen_puabi_node</code> and <code>royal_system_trace_unity</code>.<br/>Gold = core material substrate. Lapis = Abzu/subterranean information layer (Enki's domain).</em></p>
+
+---
+
 ## Purpose
 
 ```
