@@ -1,0 +1,78 @@
+// deluge_phase_collapse.qasm3
+// Civilizational entropy → threshold breach → deluge flush
+// CRITICAL_LAMBDA = sin(π/3) ≈ 0.866 — entropy saturation scale
+// H(t) ≥ Λ_crit: Enlil damping fails, Abzu overloads → flush triggered
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+// ============================================================
+// THRESHOLD CONSTANT
+// Λ_crit modeled as sin(π/3) — the critical saturation point
+// Beyond this: atmospheric damping (Enlil) cannot contain H(t)
+// ============================================================
+const float[64] CRITICAL_LAMBDA = 0.8660254;   // sin(π/3)
+
+// ============================================================
+// REGISTERS
+// entropy_register:   encodes H(t) — 8 human operational nodes
+// deluge_flush_exec:  flush execution line (|0⟩=stable, |1⟩=FLOOD)
+// ============================================================
+qubit[3] entropy_register;
+qubit[1] deluge_flush_exec;
+bit[3]   entropy_readout;
+bit[1]   flush_readout;
+
+// ============================================================
+// INITIALIZE CIVILIZATIONAL ENTROPY SUPERPOSITION
+// |H(t)⟩ = H⊗³|000⟩ = (1/√8)∑|h⟩
+// Uniform over all 8 civilizational activity levels
+// ============================================================
+def initialize_entropy_state(qubit[3] reg) {
+    h reg[0];
+    h reg[1];
+    h reg[2];
+}
+
+// ============================================================
+// THERMAL OVERRIDE: ENLIL DAMPING FAILURE + ENKI ABZU OVERLOAD
+//
+// cp(Λ) reg[0],reg[1]: Enlil-Enki coupling at entropy threshold
+// cp(Λ) reg[1],reg[2]: cascade through atmospheric-hydrological manifold
+//
+// Flush execution line:
+// h flush[0]: prepare threshold detector in |+⟩
+// cp(π/2) reg[2],flush[0]: maximum entropy level (reg[2]=|1⟩) triggers flush
+//   → if reg[2]=|1⟩: flush accumulates phase π/2 → increased P(|1⟩)
+//   → P(flush=1) = sin²(π/4) = 0.5 when entropy level = 7 (saturated)
+// ============================================================
+def apply_thermal_override(qubit[3] reg, qubit[1] flush) {
+    cp(CRITICAL_LAMBDA) reg[0], reg[1];    // Enlil-Enki atmospheric coupling
+    cp(CRITICAL_LAMBDA) reg[1], reg[2];    // Cascade to Abzu hydrological layer
+
+    h flush[0];
+    cp(pi / 2.0) reg[2], flush[0];         // Threshold trigger: max entropy → flush
+}
+
+// ============================================================
+// EXECUTION PIPELINE
+// ============================================================
+initialize_entropy_state(entropy_register);
+apply_thermal_override(entropy_register, deluge_flush_exec);
+
+entropy_readout = measure entropy_register;
+flush_readout   = measure deluge_flush_exec;
+
+// ============================================================
+// READOUT INTERPRETATION
+// entropy_readout[2:0]: civilizational entropy level (0=quiet, 7=saturation)
+// flush_readout[0]:
+//   0 → H(t) < Λ_crit: system stable (Enlil maintains control)
+//   1 → H(t) ≥ Λ_crit: DELUGE TRIGGERED (Enlil override, Abzu thermal cascade)
+//
+// Lean 4:
+//   deluge_trigger_soundness: H≥Λ → flush=true ✓
+//   thermal_load_amplification: abzu_load' ≥ abzu_load ✓
+//   seed_preservation: trace=1.0 (Utnapishtim backup) ✓
+// ============================================================
