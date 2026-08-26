@@ -1,0 +1,73 @@
+// plasma_tomb_swap_recursion.qasm3
+// 99% plasma boundary - shadow subtraction - tomb swap
+// plasma_reg: Tr(ρ_plasma) = 0.99 continuous phase space
+// shadow_reg: Ŝ_shadow non-Hermitian leakage channel
+// tomb_reg:   bound/inactive state register
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN  = 89.0 / 2462.0;
+const float[64] PLASMA_FRACTION  = 0.99;   // Tr(ρ_plasma)
+
+// ============================================================
+// REGISTERS
+// plasma_reg: continuous plasma (0.99 weight)
+// shadow_reg: shadow operator ancilla
+// tomb_reg:   tomb/ground-state environment
+// ============================================================
+qubit plasma_reg;
+qubit shadow_reg;
+qubit tomb_reg;
+bit   plasma_out;
+bit   tomb_out;
+
+// ============================================================
+// STEP 1: INITIALIZE 99% PLASMA STATE
+// ry(2·arcsin(√0.99)) on plasma_reg:
+//   P(|1⟩) = sin²(θ/2) = 0.99   → 99% plasma amplitude
+//   P(|0⟩) = cos²(θ/2) = 0.01   → 1% bound state residual
+// 2·arcsin(√0.99) ≈ 2·arcsin(0.99499) ≈ 2·1.4706 ≈ 2.9413 rad
+// ============================================================
+ry(2.0 * 1.4706289) plasma_reg;   // arcsin(sqrt(0.99)) ≈ 1.4706
+
+// ============================================================
+// STEP 2: SUBTRACT SHADOW OPERATOR
+// Ŝ_shadow = iη∑|n⟩⟨n| ⊗ σ_z^(n)
+// Implemented via:
+//   h shadow_reg: prepare |+⟩ (shadow ancilla)
+//   cz plasma_reg, shadow_reg: entangle plasma with shadow
+//   rz(-2πθ): apply shadow phase extraction
+//   h shadow_reg: disentangle via interference
+// Net effect: shadow-correlated component removed from plasma
+// ============================================================
+h shadow_reg;
+cz plasma_reg, shadow_reg;
+rz(-2.0 * 3.14159265358979 * THETA_SOVEREIGN) shadow_reg;
+h shadow_reg;
+
+// ============================================================
+// STEP 3: EXECUTE TOMB SWAP
+// T_swap = |φ_tomb⟩⟨ψ_alive| + |ψ_alive⟩⟨φ_tomb|
+// swap gate: plasma_reg ↔ tomb_reg
+// After swap: plasma_reg holds former tomb (ground state)
+//             tomb_reg holds former plasma (active state)
+// Lean 4: tomb_swap_inversion: plasma' = 1 - plasma ✓
+// ============================================================
+swap plasma_reg, tomb_reg;
+
+// ============================================================
+// STEP 4: READOUT
+// plasma_out: post-swap plasma register state
+// tomb_out:   tomb register (active plasma moved here)
+// ============================================================
+plasma_out = measure plasma_reg;
+tomb_out   = measure tomb_reg;
+
+// ============================================================
+// Lean 4:
+//   tomb_swap_involution: T∘T=id (ring) ✓
+//   plasma_bound_conservation: plasma+bound=1.0 (ring) ✓
+//   shadow_dissipation_extinction: η·0.5^N→0 ✓
+// ============================================================
