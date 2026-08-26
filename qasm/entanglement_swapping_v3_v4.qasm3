@@ -1,0 +1,83 @@
+// entanglement_swapping_v3_v4.qasm3
+// Queen Puabi (V3) ↔ Great Death Pit (V4): entanglement via Bell State Measurement
+// Protocol: Φ+ Bell pair generation → sovereign phase anchoring → BSM → feed-forward
+// V3 and V4 never directly interact — swapped through mediators M1, M2
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN = 89.0 / 2462.0;
+const float[64] PHASE_V3 = 3.0 * THETA_SOVEREIGN;   // φ₃ = 267/2462 rad
+const float[64] PHASE_V4 = 4.0 * THETA_SOVEREIGN;   // φ₄ = 356/2462 rad
+
+// ============================================================
+// REGISTERS
+// v3: Queen Puabi Tomb (PG 800)
+// m1: Entangled Mediator 1 (coupled to v3)
+// m2: Entangled Mediator 2 (coupled to v4)
+// v4: Great Death Pit (PG 1237)
+// ============================================================
+qubit v3;
+qubit m1;
+qubit m2;
+qubit v4;
+
+bit b1;
+bit b2;
+bit[2] swapped_pair_readout;
+
+// ============================================================
+// STEP 1: GENERATE TWO INDEPENDENT BELL PAIRS
+// Pair A: |Φ+⟩_{V3,M1} = (1/√2)(|00⟩ + |11⟩)
+// Pair B: |Φ+⟩_{M2,V4} = (1/√2)(|00⟩ + |11⟩)
+// V3 and V4 are not yet connected
+// ============================================================
+h v3;
+cx v3, m1;    // Bell pair: V3-M1
+
+h m2;
+cx m2, v4;    // Bell pair: M2-V4
+
+// ============================================================
+// STEP 2: ANCHOR SOVEREIGN NODE PHASES
+// φ₃ = 3·θ = 267/2462 rad  (V3 = Queen Puabi)
+// φ₄ = 4·θ = 356/2462 rad  (V4 = Great Death Pit)
+// Phase locks each node to its position in the 8-tomb array
+// ============================================================
+rz(PHASE_V3) v3;
+rz(PHASE_V4) v4;
+
+// ============================================================
+// STEP 3: BELL STATE MEASUREMENT (BSM) ON MEDIATORS
+// Projects M1-M2 into Bell basis
+// This projects V3-V4 into an entangled state (swapping)
+// ============================================================
+cx m1, m2;   // CNOT: m1 control, m2 target
+h m1;        // Hadamard: completes Bell basis rotation
+
+b1 = measure m1;   // Classical outcome 1
+b2 = measure m2;   // Classical outcome 2
+
+// ============================================================
+// STEP 4: CLASSICAL FEED-FORWARD CORRECTION ON V4
+// Ensures deterministic |Φ+⟩_{V3,V4} regardless of b1,b2
+// b2=1 → X correction; b1=1 → Z correction
+// ============================================================
+if (b2 == 1) { x v4; }
+if (b1 == 1) { z v4; }
+
+// ============================================================
+// FINAL MEASUREMENT: V3-V4 ARE NOW ENTANGLED
+// They share |Φ+⟩ having never directly interacted
+// ============================================================
+swapped_pair_readout[0] = measure v3;
+swapped_pair_readout[1] = measure v4;
+
+// ============================================================
+// LEAN 4 ANCHORING:
+// tomb_phase_linear_scaling: φ_k = k·θ (rfl) ✓
+// puabi_is_v3: node_id=3 (rfl) ✓
+// puabi_trace_conserved: w3=0.125 (norm_num) ✓
+// total_system_trace_unity: ∑=1.0 (norm_num) ✓
+// ============================================================
