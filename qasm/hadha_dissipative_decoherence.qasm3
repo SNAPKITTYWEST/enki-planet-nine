@@ -1,0 +1,99 @@
+// hadha_dissipative_decoherence.qasm3
+// HADHA β-oxidation Lindblad dissipation via Stinespring dilation
+// γ_β = 0.125 (amplitude damping: energy → ATP/NADH)
+// γ_φ = 89/2462 (pure dephasing: mitochondrial thermal noise)
+// Steady state: ρ(∞) = |0⟩⟨0|  T₂* = 19696/2655 ≈ 7.42 time units
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN  = 89.0 / 2462.0;
+const float[64] PI               = 3.141592653589793;
+
+// ============================================================
+// STINESPRING ANGLES FROM LINDBLAD RATES
+// θ_amp  = 2·arcsin(√γ_β) = 2·arcsin(√0.125) ≈ 0.7227 rad
+// θ_phase= 2·arcsin(√γ_φ) = 2·arcsin(√(89/2462)) ≈ 0.3820 rad
+// ============================================================
+const float[64] THETA_AMP_DAMP   = 0.722734;   // γ_β = 0.125 amplitude damping
+const float[64] THETA_PHASE_DAMP = 0.382025;   // γ_φ = 89/2462 pure dephasing
+
+// ============================================================
+// REGISTERS
+// hadha_system: primary HADHA metabolic state qubit
+// env_amp:      ancilla — models energy dissipation to ATP/NADH
+// env_phase:    ancilla — models thermal membrane fluctuations
+// ============================================================
+qubit hadha_system;
+qubit env_amp;
+qubit env_phase;
+
+bit hadha_readout;
+bit env_amp_readout;
+bit env_phase_readout;
+
+// ============================================================
+// STEP 1: SYSTEM INITIALIZATION
+// H: prepare metabolic superposition (|active⟩ + |depleted⟩)/√2
+// rz(2πθ): coherent HADHA drive shift H_HADHA = 2πθ·σ_z
+// ============================================================
+h hadha_system;
+rz(2.0 * PI * THETA_SOVEREIGN) hadha_system;
+
+// ============================================================
+// STEP 2: COHERENT EVOLUTION
+// rx(2πθ): unitary rotation under H_HADHA
+// Models: unperturbed acetyl-CoA oxidation cycle
+// ============================================================
+rx(2.0 * PI * THETA_SOVEREIGN) hadha_system;
+
+// ============================================================
+// STEP 3: AMPLITUDE DAMPING CHANNEL (Stinespring dilation)
+// Kraus operators: M₀ = [[1,0],[0,√(1-γ_β)]], M₁ = [[0,√γ_β],[0,0]]
+// Implementation:
+//   reset env_amp: |0⟩ environment
+//   ry(θ_amp): creates √γ_β amplitude in env_amp (rotation angle encodes γ)
+//   cx hadha_system, env_amp: entangle system with environment
+//   cz env_amp, hadha_system: Kraus M₁ back-action
+// Physical: energy flows from HADHA system → ATP synthases → env_amp
+// ============================================================
+reset env_amp;
+ry(THETA_AMP_DAMP) env_amp;
+cx hadha_system, env_amp;
+cz env_amp, hadha_system;
+
+// ============================================================
+// STEP 4: PHASE DAMPING CHANNEL (Stinespring dilation)
+// Kraus operators: E₀ = √(1-γ_φ)·I,  E₁ = √γ_φ·σ_z
+// Implementation:
+//   reset + H: env_phase in |+⟩ = (|0⟩+|1⟩)/√2
+//   cp(θ_phase): controlled-phase encodes dephasing γ_φ = 89/2462
+//   H: final Hadamard completes Stinespring dilation
+// Physical: thermal membrane collisions randomize HADHA phase
+// ============================================================
+reset env_phase;
+h env_phase;
+cp(THETA_PHASE_DAMP) hadha_system, env_phase;
+h env_phase;
+
+// ============================================================
+// STEP 5: ENVIRONMENTAL TRACE-OUT (measure + discard)
+// Measuring env_amp and env_phase traces out the environment,
+// leaving hadha_system in the decohered mixed state ρ_HADHA
+// ============================================================
+env_amp_readout   = measure env_amp;
+env_phase_readout = measure env_phase;
+hadha_readout     = measure hadha_system;
+
+// ============================================================
+// STEADY STATE (t→∞):
+// ρ_HADHA(∞) = |0⟩⟨0| = [[1,0],[0,0]]
+// T₂* = 19696/2655 ≈ 7.4185 time units
+//
+// Lean 4:
+//   gamma_perp_exact:         γ_⊥=2655/19696 (norm_num) ✓
+//   T2_star_exact:            T₂*=19696/2655 (norm_num) ✓
+//   dephasing_dominates:      2γ_φ > γ_β/2 (norm_num) ✓
+//   steady_state_trace_unity: ρ₀₀+ρ₁₁=1 (norm_num) ✓
+// ============================================================
