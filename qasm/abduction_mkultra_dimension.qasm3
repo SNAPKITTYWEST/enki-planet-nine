@@ -1,0 +1,35 @@
+// abduction_mkultra_dimension.qasm3
+// 4D abduction state space: temporal ⊗ somatosensory ⊗ mnemonic
+// θ_sovereign couples temporal-somatosensory dimensions
+// exposure_intensity = π/2 operational coupling angle
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN     = 89.0 / 2462.0;
+const float[64] EXPOSURE_INTENSITY  = 1.570796326;   // π/2
+
+qubit[1] temporal_reg;       // Missing time dimension
+qubit[1] somatosensory_reg;  // Paralysis dimension
+qubit[1] mnemonic_reg;       // Memory purity dimension
+bit      temporal_out;
+bit      somatosensory_out;
+bit      mnemonic_out;
+
+// 1. Initialize orthogonal dimensions in superposition
+h temporal_reg[0];
+h somatosensory_reg[0];
+h mnemonic_reg[0];
+
+// 2. Entangle temporal↔somatosensory via θ_sovereign
+cp(THETA_SOVEREIGN) temporal_reg[0], somatosensory_reg[0];
+
+// 3. Apply abduction-coercion operator to mnemonic dimension
+ry(EXPOSURE_INTENSITY) mnemonic_reg[0];
+cz somatosensory_reg[0], mnemonic_reg[0];
+
+// 4. Readout
+temporal_out      = measure temporal_reg[0];
+somatosensory_out = measure somatosensory_reg[0];
+mnemonic_out      = measure mnemonic_reg[0];

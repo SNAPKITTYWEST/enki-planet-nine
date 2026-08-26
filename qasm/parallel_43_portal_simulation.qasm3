@@ -1,0 +1,37 @@
+// parallel_43_portal_simulation.qasm3
+// 43rd Parallel portal grid: Roswell anomaly ↔ ritual casting coupling
+// θ_sovereign = 89/2462 in grid metric coupling K_{ij}
+// PARALLEL_43_PHASE = harmonic grid angle for 43°N
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN    = 89.0 / 2462.0;
+const float[64] PARALLEL_43_PHASE  = 0.750491578;  // Harmonic grid angle 43°N
+
+qubit[1] roswell_anomaly_reg;    // Roswell metric rupture
+qubit[1] ufo_trajectory_reg;    // Non-geodesic trajectory vector
+qubit[1] ritual_casting_reg;    // Ceremonial intent modulation
+bit[1]   roswell_readout;
+bit[1]   ufo_readout;
+bit[1]   ritual_readout;
+
+// 1. Initialize portal seam superposition
+h roswell_anomaly_reg[0];
+h ufo_trajectory_reg[0];
+h ritual_casting_reg[0];
+
+// 2. Entangle crash anomaly with trajectory (θ_sovereign coupling)
+cp(THETA_SOVEREIGN) roswell_anomaly_reg[0], ufo_trajectory_reg[0];
+
+// 3. Couple ritual casting to grid seam (43rd parallel phase)
+cp(PARALLEL_43_PHASE) ufo_trajectory_reg[0], ritual_casting_reg[0];
+
+// 4. Apply non-commutative portal resonance pulse
+rz(PARALLEL_43_PHASE * THETA_SOVEREIGN) ritual_casting_reg[0];
+
+// 5. Readout
+roswell_readout[0] = measure roswell_anomaly_reg[0];
+ufo_readout[0]     = measure ufo_trajectory_reg[0];
+ritual_readout[0]  = measure ritual_casting_reg[0];
