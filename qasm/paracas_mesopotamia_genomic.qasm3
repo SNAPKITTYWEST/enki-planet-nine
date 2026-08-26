@@ -1,0 +1,42 @@
+// paracas_mesopotamia_genomic.qasm3
+// Paracas cranial morphology ↔ Near East genomic coupling
+// θ_sovereign = 89/2462 in geographic coupling tensor K_{ij}
+// Author: Ahmad Ali Parr
+
+OPENQASM 3.0;
+include "stdgates.inc";
+
+const float[64] THETA_SOVEREIGN = 89.0 / 2462.0;
+const float[64] NEAR_EAST_PHASE = 0.785398163;    // π/4 cranial-genomic coupling
+
+qubit[1] cranial_morphology_reg;   // Paracas skull morphology state
+qubit[1] near_east_genomic_reg;    // Near Eastern haplogroup state
+bit[1]   morph_readout;
+bit[1]   genomic_readout;
+
+// ============================================================
+// INITIALIZE CRANIAL-GENOMIC LINK
+// H on both: superposition over morphological and genomic states
+// cp(θ_sovereign): K_{ij} phase — entangles skull geometry with
+//   Near East genomic distance via non-commutative coupling
+// ============================================================
+def initialize_cranial_link(qubit[1] c, qubit[1] g) {
+    h c[0];
+    h g[0];
+    cp(THETA_SOVEREIGN) c[0], g[0];    // Geographic coupling tensor phase
+}
+
+// ============================================================
+// NEAR EASTERN MIGRATION PHASE
+// rz(π/4 × θ): encodes Near East → Paracas migration vector
+// Phase proportional to θ_sovereign (same background constant)
+// ============================================================
+def apply_genomic_phase(qubit[1] g) {
+    rz(NEAR_EAST_PHASE * THETA_SOVEREIGN) g[0];
+}
+
+initialize_cranial_link(cranial_morphology_reg, near_east_genomic_reg);
+apply_genomic_phase(near_east_genomic_reg);
+
+morph_readout[0]   = measure cranial_morphology_reg[0];
+genomic_readout[0] = measure near_east_genomic_reg[0];
